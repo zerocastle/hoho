@@ -5,17 +5,31 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+	<!-- 사용자가 접근 에러를 커스터 마이징 하는 빈을 정의 해놓는다. -->
+	<bean id="customAccessDenied"
+		class="com.ys.hoho.security.CustomAccessDeniedHandler"></bean>
+
+
 	<security:http auto-config="true" use-expressions="true">
 		<security:intercept-url pattern="/sample/all"
 			access="permitAll" />
 		<security:intercept-url
 			pattern="/sample/member" access="hasRole('ROLE_MEMBER')" />
-		<security:form-login />
+			
+		<!-- 사용자가 정의 해놓은 로그인 페이지로 이동 -->
+		<security:form-login login-page="/customLogin"/>
 
 		<security:intercept-url pattern="/sample/admin"
 			access="hasRole('ROLE_ADMIN')" />
 
+		<!-- url 접근 에러시 보여줄 페이지 -->
+		<!-- <security:access-denied-handler error-page="/accessError" /> -->
+		<security:access-denied-handler
+			ref="customAccessDenied" />
+
 	</security:http>
+
+	<!-- 아래는 입력에 대한 정보에 인증을 하는 부분이다. 입력한 정보에 따라서 권한을 부여한다. -->
 
 	<security:authentication-manager>
 
@@ -27,7 +41,7 @@
 
 				<security:user name="admin" password="{noop}admin"
 					authorities="ROLE_MEMBER,ROLE_ADMIN" />
-				
+
 			</security:user-service>
 
 		</security:authentication-provider>
